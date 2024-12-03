@@ -1,6 +1,7 @@
 ﻿using CPL_Case_mini_capstone.Model;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Xrm.Sdk;
+using System.ServiceModel;
 
 
 
@@ -92,18 +93,47 @@ namespace CPL_Case_mini_capstone.Services
         }
 
         /// <summary>
-        /// Updates an existing contact in Dataverse.
+        /// Updates an existing contact record in Dataverse based on the provided contact data.
         /// </summary>
-        /// <param name="person">
-        /// The <see cref="Contact"/> object containing the updated contact data.
+        /// <param name="contact">
+        /// A <see cref="Contact"/> object containing the updated information for the contact.
+        /// The object must include the unique identifier for the contact being updated.
         /// </param>
         /// <remarks>
-        /// Ensure that the <paramref name="person"/> object contains valid and complete data.
-        /// An exception may be thrown if the record fails validation or if the user lacks sufficient permissions.
+        /// This operation modifies the specified contact record in Dataverse.
+        /// Ensure the <paramref name="contact"/> object is valid and includes an existing contact ID.
+        /// <para>
+        /// <b>Note:</b>
+        /// An exception of type <see cref="FaultException{OrganizationServiceFault}"/> may be thrown if:
+        /// <list type="bullet">
+        /// <item>The contact record is not found.</item>
+        /// <item>The provided contact ID is invalid or malformed.</item>
+        /// <item>The user lacks sufficient update permissions for the contact table.</item>
+        /// <item>A Dataverse server-side error occurs, such as a <c>400 Bad Request</c> or transient issue.</item>
+        /// </list>
+        /// The exception includes detailed information in the <see cref="OrganizationServiceFault"/> object,
+        /// such as the fault reason, error code, and message.
+        /// </para>
+        /// <para>
+        /// <b>Developer Guidance:</b>
+        /// Ensure proper exception handling is implemented in the calling code to handle potential failures gracefully.
+        /// Validate that the contact object is correctly populated before calling this method.
+        /// </para>
         /// </remarks>
-        public void Update(Contact person)
+        /// <exception cref="FaultException{OrganizationServiceFault}">
+        /// Thrown when the Dataverse service encounters an error during the update operation.
+        /// </exception>
+        public void Update(Contact contact)
         {
-            dataverseConnection.Update(person);
+            try
+            {
+                dataverseConnection.Update(contact);
+            }
+            catch (FaultException<OrganizationServiceFault> ex)
+            {
+                Console.WriteLine($"Dataverse error: {ex.Detail.Message}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -116,15 +146,38 @@ namespace CPL_Case_mini_capstone.Services
         /// This operation is irreversible and permanently removes the contact record from Dataverse.
         /// Ensure the GUID is valid and corresponds to an existing contact.
         /// <para>
-        /// <b>Note:</b> An exception may be thrown if:
-        /// - The contact record is not found.
-        /// - The provided GUID is invalid.
-        /// - The user lacks sufficient delete permissions for the contact table.
+        /// <b>Note:</b>
+        /// An exception of type <see cref="FaultException{OrganizationServiceFault}"/> may be thrown if:
+        /// <list type="bullet">
+        /// <item>The contact record is not found.</item>
+        /// <item>The provided GUID is invalid or malformed.</item>
+        /// <item>The user lacks sufficient delete permissions for the contact table.</item>
+        /// <item>A Dataverse server-side error occurs, such as a <c>400 Bad Request</c> or transient issue.</item>
+        /// </list>
+        /// The exception includes detailed information in the <see cref="OrganizationServiceFault"/> object,
+        /// such as the fault reason and error code.
+        /// </para>
+        /// <para>
+        /// <b>Developer Guidance:</b>
+        /// Ensure proper exception handling is implemented in calling code to handle potential failures gracefully.
+        /// Consider validating the GUID before calling this method.
         /// </para>
         /// </remarks>
+        /// <exception cref="FaultException{OrganizationServiceFault}">
+        /// Thrown when the Dataverse service encounters an error during the delete operation.
+        /// </exception>
         public void Delete(Guid contactID)
         {
-            dataverseConnection.Delete(Contact.EntityLogicalName,contactID);
+            try
+            {
+                dataverseConnection.Delete(Contact.EntityLogicalName, contactID);
+            }
+            catch(FaultException<OrganizationServiceFault> ex)
+            {
+                Console.WriteLine($"Dataverse error: {ex.Detail.Message}");
+                throw;
+            }
+            
         }
 
     }

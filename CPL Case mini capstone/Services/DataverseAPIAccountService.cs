@@ -2,6 +2,7 @@
 using Microsoft.Identity.Client; //Microsoft Authentification Library (MSAL)
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using System.ServiceModel;
 
 
 namespace CPL_Case_mini_capstone.Services
@@ -93,18 +94,47 @@ namespace CPL_Case_mini_capstone.Services
         }
 
         /// <summary>
-        /// Updates an existing account record in Dataverse.
+        /// Updates an existing account record in Dataverse based on the provided account data.
         /// </summary>
         /// <param name="account">
-        /// The <see cref="Account"/> object containing the updated Account data.
+        /// An <see cref="Account"/> object containing the updated information for the account.
+        /// The object must include the unique identifier for the account being updated.
         /// </param>
         /// <remarks>
-        /// Ensure that the <paramref name="account"/> object contains valid and complete data.
-        /// An exception may be thrown if the record fails validation or if the user lacks sufficient permissions.
+        /// This operation modifies the specified account record in Dataverse.
+        /// Ensure the <paramref name="account"/> object is valid and includes an existing account ID.
+        /// <para>
+        /// <b>Note:</b>
+        /// An exception of type <see cref="FaultException{OrganizationServiceFault}"/> may be thrown if:
+        /// <list type="bullet">
+        /// <item>The account record is not found.</item>
+        /// <item>The provided account ID is invalid or malformed.</item>
+        /// <item>The user lacks sufficient update permissions for the account table.</item>
+        /// <item>A Dataverse server-side error occurs, such as a <c>400 Bad Request</c> or transient issue.</item>
+        /// </list>
+        /// The exception includes detailed information in the <see cref="OrganizationServiceFault"/> object,
+        /// such as the fault reason, error code, and message.
+        /// </para>
+        /// <para>
+        /// <b>Developer Guidance:</b>
+        /// Ensure proper exception handling is implemented in the calling code to handle potential failures gracefully.
+        /// Validate that the account object is correctly populated before calling this method.
+        /// </para>
         /// </remarks>
+        /// <exception cref="FaultException{OrganizationServiceFault}">
+        /// Thrown when the Dataverse service encounters an error during the update operation.
+        /// </exception>
         public void Update(Account account)
         {
-            dataverseConnection.Update(account);
+            try
+            {
+                dataverseConnection.Update(account);
+            }
+            catch (FaultException<OrganizationServiceFault> ex)
+            {
+                Console.WriteLine($"Dataverse error: {ex.Detail.Message}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -117,15 +147,39 @@ namespace CPL_Case_mini_capstone.Services
         /// This operation is irreversible and permanently removes the account record from Dataverse.
         /// Ensure the GUID is valid and corresponds to an existing account record.
         /// <para>
-        /// <b>Note:</b> An exception may be thrown if:
-        /// - The account record is not found.
-        /// - The provided GUID is invalid.
-        /// - The user lacks sufficient delete permissions for the account table.
+        /// <b>Note:</b>
+        /// An exception of type <see cref="FaultException{OrganizationServiceFault}"/> may be thrown if:
+        /// <list type="bullet">
+        /// <item>The account record is not found.</item>
+        /// <item>The provided GUID is invalid or malformed.</item>
+        /// <item>The user lacks sufficient delete permissions for the account table.</item>
+        /// <item>A Dataverse server-side error occurs, such as a <c>400 Bad Request</c> or transient issue.</item>
+        /// </list>
+        /// The exception includes detailed information in the <see cref="OrganizationServiceFault"/> object,
+        /// such as the fault reason, error code, and message.
+        /// </para>
+        /// <para>
+        /// <b>Developer Guidance:</b>
+        /// Ensure proper exception handling is implemented in calling code to handle potential failures gracefully.
+        /// Consider validating the GUID before calling this method.
         /// </para>
         /// </remarks>
+        /// <exception cref="FaultException{OrganizationServiceFault}">
+        /// Thrown when the Dataverse service encounters an error during the delete operation.
+        /// </exception>
         public void Delete(Guid accountID)
         {
-            dataverseConnection.Delete(Account.EntityLogicalName, accountID);
+            
+
+            try
+            {
+                dataverseConnection.Delete(Account.EntityLogicalName, accountID);
+            }
+            catch (FaultException<OrganizationServiceFault> ex)
+            {
+                Console.WriteLine($"Dataverse error: {ex.Detail.Message}");
+                throw;
+            }
         }
 
 
