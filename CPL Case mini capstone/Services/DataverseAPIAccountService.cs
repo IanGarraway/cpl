@@ -35,28 +35,36 @@ namespace CPL_Case_mini_capstone.Services
         /// </remarks>
         public IEnumerable<Account> GetAll()
         {
-            QueryExpression query = new QueryExpression(Account.EntityLogicalName)
+            try
             {
-                ColumnSet = new ColumnSet(true),
-                PageInfo = new PagingInfo() { Count = 5000, PageNumber = 1 }
-            };
-
-            List<Account> allAccounts = [];
-            EntityCollection results;
-
-            do
-            {
-                results = dataverseConnection.RetrieveMultiple(query);
-
-                foreach (Entity record in results.Entities)
+                QueryExpression query = new QueryExpression(Account.EntityLogicalName)
                 {
-                    Account account = (Account)record;
-                    allAccounts.Add(account);
-                }
-                query.PageInfo.PageNumber++;
-            } while(results.MoreRecords);
-            
-            return allAccounts;
+                    ColumnSet = new ColumnSet(true),
+                    PageInfo = new PagingInfo() { Count = 5000, PageNumber = 1 }
+                };
+
+                List<Account> allAccounts = [];
+                EntityCollection results;
+
+                do
+                {
+                    results = dataverseConnection.RetrieveMultiple(query);
+
+                    foreach (Entity record in results.Entities)
+                    {
+                        Account account = (Account)record;
+                        allAccounts.Add(account);
+                    }
+                    query.PageInfo.PageNumber++;
+                } while (results.MoreRecords);
+
+                return allAccounts;
+            }
+            catch (FaultException<OrganizationServiceFault> ex)
+            {
+                Console.WriteLine($"Dataverse error: {ex.Detail.Message}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -74,7 +82,15 @@ namespace CPL_Case_mini_capstone.Services
         /// </remarks>
         public Guid Create(Account account)
         {
-            return dataverseConnection.Create(account);
+            try
+            {
+                return dataverseConnection.Create(account);
+            }
+            catch (FaultException<OrganizationServiceFault> ex)
+            {
+                Console.WriteLine($"Dataverse error: {ex.Detail.Message}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -89,8 +105,16 @@ namespace CPL_Case_mini_capstone.Services
         /// </remarks>
         public Account Get(Guid accountID)
         {
-            ColumnSet columns = new(true);
-            return (Account)dataverseConnection.Retrieve(Account.EntityLogicalName, accountID, columns);
+            try
+            {
+                ColumnSet columns = new(true);
+                return (Account)dataverseConnection.Retrieve(Account.EntityLogicalName, accountID, columns);
+            }
+            catch (FaultException<OrganizationServiceFault> ex)
+            {
+                Console.WriteLine($"Dataverse error: {ex.Detail.Message}");
+                throw;
+            }
         }
 
         /// <summary>

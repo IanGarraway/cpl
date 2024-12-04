@@ -1,6 +1,7 @@
 ﻿using CPL_Case_mini_capstone.Model;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
+using System.ServiceModel;
 
 
 namespace CPL_Case_mini_capstone.Services
@@ -32,28 +33,36 @@ namespace CPL_Case_mini_capstone.Services
         /// </remarks>
         public IEnumerable<Incident> GetAll()
         {
-            QueryExpression query = new QueryExpression(Incident.EntityLogicalName)
+            try
             {
-                ColumnSet = new ColumnSet(true),
-                PageInfo = new PagingInfo() { Count = 5000, PageNumber = 1 }
-            };
-
-            List<Incident> allCases = [];
-            EntityCollection results;
-
-            do
-            {
-                results = dataverseConnection.RetrieveMultiple(query);
-
-                foreach (Entity record in results.Entities)
+                QueryExpression query = new QueryExpression(Incident.EntityLogicalName)
                 {
-                    Incident aCase = (Incident)record;
-                    allCases.Add(aCase);
-                }
-                query.PageInfo.PageNumber++;
-            } while (results.MoreRecords);
+                    ColumnSet = new ColumnSet(true),
+                    PageInfo = new PagingInfo() { Count = 5000, PageNumber = 1 }
+                };
 
-            return allCases;
+                List<Incident> allCases = [];
+                EntityCollection results;
+
+                do
+                {
+                    results = dataverseConnection.RetrieveMultiple(query);
+
+                    foreach (Entity record in results.Entities)
+                    {
+                        Incident aCase = (Incident)record;
+                        allCases.Add(aCase);
+                    }
+                    query.PageInfo.PageNumber++;
+                } while (results.MoreRecords);
+
+                return allCases;
+            }
+            catch (FaultException<OrganizationServiceFault> ex)
+            {
+                Console.WriteLine($"Dataverse error: {ex.Detail.Message}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -67,11 +76,26 @@ namespace CPL_Case_mini_capstone.Services
         /// </returns>
         /// <remarks>
         /// Ensure that the <paramref name="aCase"/> object contains all required fields.
-        /// An exception may be thrown if the record fails validation or if the user lacks sufficient permissions.
+        /// An exception of type <see cref="FaultException{OrganizationServiceFault}"/> may be thrown if:
+        /// <list type="bullet">
+        /// <item>record fails validation</item>
+        /// <item>User lacks sufficient permissions</item>
+        /// </list>        
         /// </remarks>
+        /// <exception cref="FaultException{OrganizationServiceFault}">
+        /// Thrown when the Dataverse service encounters an error during the create operation.
+        /// </exception>
         public Guid Create(Incident aCase)
         {
-            return dataverseConnection.Create(aCase);
+            try
+            {
+                return dataverseConnection.Create(aCase);
+            }
+            catch (FaultException<OrganizationServiceFault> ex)
+            {
+                Console.WriteLine($"Dataverse error: {ex.Detail.Message}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -84,25 +108,65 @@ namespace CPL_Case_mini_capstone.Services
         /// Ensure GUID is valid for a case record, and exception may be thrown if the case record fails to be found, 
         /// the user lacks sufficient permission, or the GUID is invalid.
         /// </remarks>
+        /// <exception cref="FaultException{OrganizationServiceFault}">
+        /// Thrown when the Dataverse service encounters an error during the retrieve operation.
+        /// </exception>
         public Incident Get(Guid caseID)
         {
-            ColumnSet columns = new(true);
-            return (Incident)dataverseConnection.Retrieve(Incident.EntityLogicalName, caseID, columns);
+            try
+            {
+                ColumnSet columns = new(true);
+                return (Incident)dataverseConnection.Retrieve(Incident.EntityLogicalName, caseID, columns);
+            }
+            catch (FaultException<OrganizationServiceFault> ex)
+            {
+                Console.WriteLine($"Dataverse error: {ex.Detail.Message}");
+                throw;
+            }
         }
 
         /// <summary>
         /// Updates an existing incident case in Dataverse.
         /// </summary>
         /// <param name="aCase">
-        /// The <see cref="Incident"/> object containing the updated case data.
+        /// An <see cref="Incident"/> object containing the updated case data.
+        /// The object must include the unique identifier for the case being updated.
         /// </param>
         /// <remarks>
+        /// This operation modifies the specified case record in Dataverse.
         /// Ensure that the <paramref name="aCase"/> object contains valid and complete data.
-        /// An exception may be thrown if the record fails validation or if the user lacks sufficient permissions.
+        /// <para>
+        /// <b>Note:</b>
+        /// An exception of type <see cref="FaultException{OrganizationServiceFault}"/> may be thrown if:
+        /// <list type="bullet">
+        /// <item>The account record is not found.</item>
+        /// <item>The provided account ID is invalid or malformed.</item>
+        /// <item>The user lacks sufficient update permissions for the account table.</item>
+        /// <item>A Dataverse server-side error occurs, such as a <c>400 Bad Request</c> or transient issue.</item>
+        /// </list>
+        /// The exception includes detailed information in the <see cref="OrganizationServiceFault"/> object,
+        /// such as the fault reason, error code, and message.
+        /// </para>
+        /// <para>
+        /// <b>Developer Guidance:</b>
+        /// Ensure proper exception handling is implemented in the calling code to handle potential failures gracefully.
+        /// Validate that the Incident object is correctly populated before calling this method.
+        /// </para>
         /// </remarks>
+        /// <exception cref="FaultException{OrganizationServiceFault}">
+        /// Thrown when the Dataverse service encounters an error during the update operation.
+        /// </exception>
         public void Update(Incident aCase)
         {
-            dataverseConnection.Update(aCase);
+            try
+            {
+                dataverseConnection.Update(aCase);
+            }
+            catch (FaultException<OrganizationServiceFault> ex)
+            {
+                Console.WriteLine($"Dataverse error: {ex.Detail.Message}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -115,15 +179,36 @@ namespace CPL_Case_mini_capstone.Services
         /// This operation is irreversible and permanently removes the case record from Dataverse.
         /// Ensure the GUID is valid and corresponds to an existing case.
         /// <para>
-        /// <b>Note:</b> An exception may be thrown if:
-        /// - The case record is not found.
-        /// - The provided GUID is invalid.
-        /// - The user lacks sufficient delete permissions for the Case table.
+        /// An exception of type <see cref="FaultException{OrganizationServiceFault}"/> may be thrown if:
+        /// <list type="bullet">
+        /// <item> The case record is not found. </item>
+        /// <item> The provided GUID is invalid. </item>
+        /// <item> The user lacks sufficient delete permissions for the Case table. </item>
+        /// <item>A Dataverse server-side error occurs, such as a <c>400 Bad Request</c> or transient issue.</item>
+        /// The exception includes detailed information in the <see cref="OrganizationServiceFault"/> object,
+        /// such as the fault reason, error code, and message.
+        /// </list>
+        /// </para>
+        /// <para>
+        /// <b>Developer Guidance:</b>
+        /// Ensure proper exception handling is implemented in calling code to handle potential failures gracefully.
+        /// Consider validating the GUID before calling this method.
         /// </para>
         /// </remarks>
+        /// <exception cref="FaultException{OrganizationServiceFault}">
+        /// Thrown when the Dataverse service encounters an error during the delete operation.
+        /// </exception>
         public void Delete(Guid caseID)
         {
-            dataverseConnection.Delete(Incident.EntityLogicalName, caseID);
+            try
+            {
+                dataverseConnection.Delete(Incident.EntityLogicalName, caseID);
+            }
+            catch (FaultException<OrganizationServiceFault> ex)
+            {
+                Console.WriteLine($"Dataverse error: {ex.Detail.Message}");
+                throw;
+            }
         }
     }
 }
