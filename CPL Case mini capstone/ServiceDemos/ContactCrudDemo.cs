@@ -22,14 +22,16 @@ namespace CPL_Case_mini_capstone.ServiceDemos
 
             //Before
             Console.WriteLine("\nBefore:");
-            DisplayUtility.DisplayListByProperty(contactService.GetAll().ToList(), contact => contact.FullName);
+            DisplayUtility.DisplayListByProperty(contactService.GetAll().ToList());
 
             //Creation of a Contact
             Contact contact = new()
             {
-                FirstName = "Ian",
-                LastName = "Garroway",
-
+                FirstName = "Bucky",
+                LastName = "OHaire",
+                EMailAddress1 = "Bucky@RIShipping.com",
+                Telephone1 = "0777 2456 567",
+                Company = "RI Shipping",
             };
 
             Guid contactID = contactService.Create(contact);
@@ -37,26 +39,31 @@ namespace CPL_Case_mini_capstone.ServiceDemos
             //After creation
             Console.WriteLine("\nAfter creation");
 
-            DisplayUtility.DisplayListByProperty(contactService.GetAll().ToList(), contact => contact.FullName);
+            DisplayUtility.DisplayListByProperty(contactService.GetAll().ToList());
 
             //Retrieve a single Contact
             Contact retrievedContact = contactService.Get(contactID);
             Console.WriteLine($"\nRetrieved Contact: {retrievedContact.Id}: {retrievedContact.FullName} created on: {retrievedContact.CreatedOn} ");
 
             //Update a single Contact
-            retrievedContact.LastName = "Garraway"; //Fix the typo
+            retrievedContact.LastName = "O'Haire"; //Fix the typo
+            retrievedContact.Company = "RI Shipping plc";
             contactService.Update(retrievedContact);
 
             //Retrieve the now updated contact
             retrievedContact = contactService.Get(contactID);
             Console.WriteLine($"\nRetrieved Contact after typo correction: {retrievedContact.Id}: {retrievedContact.FullName} created on: {retrievedContact.CreatedOn} modified: {retrievedContact.ModifiedOn} ");
 
+            Console.WriteLine("\nAfter Update:");
+            DisplayUtility.DisplayListByProperty(contactService.GetAll().ToList());
+
+
             //Delete the Contact
             contactService.Delete(contactID);
 
             //After Deletion
             Console.WriteLine("\nAfter Deletion:");
-            DisplayUtility.DisplayListByProperty(contactService.GetAll().ToList(), contact => contact.FullName);
+            DisplayUtility.DisplayListByProperty(contactService.GetAll().ToList());
 
             Console.WriteLine("\n******************************************");
             Console.WriteLine("Enter to Continue");

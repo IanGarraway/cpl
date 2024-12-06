@@ -18,10 +18,10 @@ namespace CPLCaseApp._test
 
             //Assert
             Assert.IsNotNull(settings);
-            Assert.IsTrue(settings.loadSuccessful);
-            Assert.AreEqual("fakeResource", settings.resource);
-            Assert.AreEqual("fakeSecretID", settings.secretID);
-            Assert.AreEqual("fakeAppID", settings.appID);
+            Assert.IsTrue(settings.LoadSuccessful);
+            Assert.AreEqual("fakeResource", settings.Resource);
+            Assert.AreEqual("fakeSecretID", settings.SecretID);
+            Assert.AreEqual("fakeAppID", settings.AppID);
         }
 
         [TestMethod]
@@ -38,7 +38,7 @@ namespace CPLCaseApp._test
 
                 //Assert
                 Assert.IsNotNull(settings);
-                Assert.IsFalse(settings.loadSuccessful);
+                Assert.IsFalse(settings.LoadSuccessful);
                 Assert.AreEqual(expectedMessage, consoleOutput.ToString().Trim());
             }
         }
@@ -57,7 +57,7 @@ namespace CPLCaseApp._test
 
                 //Assert
                 Assert.IsNotNull(settings);
-                Assert.IsFalse(settings.loadSuccessful);
+                Assert.IsFalse(settings.LoadSuccessful);
                 Assert.AreEqual(expectedMessage, consoleOutput.ToString().Trim());
             }
         }
@@ -77,7 +77,7 @@ namespace CPLCaseApp._test
                 //Assert
                 Assert.IsNotNull(settings);                
                 Assert.AreEqual(expectedMessage, consoleOutput.ToString().Trim());
-                Assert.IsFalse(settings.loadSuccessful);
+                Assert.IsFalse(settings.LoadSuccessful);
             }
         }
     }

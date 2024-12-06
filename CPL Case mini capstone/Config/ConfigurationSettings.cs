@@ -12,8 +12,8 @@ namespace CPL_Case_mini_capstone.Configurations
     public class ConfigurationSettings
     {
         public string? Resource { get; set; }
-        public string? SecretID { get; set; }
-        public string? AppID { get; set; }
+        public string? Secret { get; set; }
+        public string? ClientID { get; set; }
         public string? RedirectURI { get; set; }
     }
 
@@ -27,8 +27,8 @@ namespace CPL_Case_mini_capstone.Configurations
         /// Class properties, read only once set.
         /// </summary>
         public string? Resource { get; }
-        public string? SecretID { get; }
-        public string? AppID { get; }
+        public string? Secret { get; }
+        public string? ClientID { get; }
         public string? RedirectURI { get; }
         public bool LoadSuccessful { get; }
         public string? ConnectionString { get; }
@@ -53,6 +53,14 @@ namespace CPL_Case_mini_capstone.Configurations
             try
             {
                 //read and deserialise the config file
+                // Json File Format - appsettings.json
+                //{
+                //  "Resource": "", connection url
+                //  "Secret": "", the secret
+                //  "ClientID": "", the client id
+                //  "RedirectURI": "http://localhost"
+                //}
+
                 string json = File.ReadAllText(configFileName);
                 ConfigurationSettings? settings = JsonSerializer.Deserialize<ConfigurationSettings>(json);
 
@@ -64,14 +72,14 @@ namespace CPL_Case_mini_capstone.Configurations
                 //Set the properties
 
                 Resource = settings?.Resource ?? throw new ArgumentNullException(nameof(settings.Resource));
-                SecretID = settings?.SecretID ?? throw new ArgumentNullException(nameof(settings.SecretID));
-                AppID = settings?.AppID ?? throw new ArgumentNullException(nameof(settings.AppID));
+                Secret = settings?.Secret ?? throw new ArgumentNullException(nameof(settings.Secret));
+                ClientID = settings?.ClientID ?? throw new ArgumentNullException(nameof(settings.ClientID));
                 RedirectURI = settings?.RedirectURI ?? throw new ArgumentNullException(nameof(settings.RedirectURI));
 
                 ConnectionString = $@"AuthType=ClientSecret;
                     SkipDiscovery=true; url={Resource};
-                    Secret={SecretID};
-                    ClientId={AppID};
+                    Secret={Secret};
+                    ClientId={ClientID};
                     RequireNewInstance=true";
 
                 //Set the flag to indicate a successful load of settings

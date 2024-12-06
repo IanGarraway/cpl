@@ -2,7 +2,6 @@
 using Microsoft.PowerPlatform.Dataverse.Client;
 using Microsoft.Xrm.Sdk;
 using CPL_Case_mini_capstone.Configurations;
-using CPL_Case_mini_capstone.utilities;
 using CPL_Case_mini_capstone.ServiceDemos;
 
 namespace CPL_Case_mini_capstone
@@ -14,7 +13,15 @@ namespace CPL_Case_mini_capstone
         
         static void Main(string[] args)
         {
-            Start();           
+            try
+            {
+                Start();
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine("Apologies, Fatal Error");
+                Console.WriteLine(ex.Message);  
+            }
         }
 
         static void Start()
@@ -27,14 +34,10 @@ namespace CPL_Case_mini_capstone
             DataverseAPIAccountService accountService = new DataverseAPIAccountService(service);
             DataverseAPICaseService caseService = new DataverseAPICaseService(service);
 
-            Guid userID = WhoAmI.GetGuid(service);
-
             //CRUD Demos
-            ContactCrudDemo.ContactCrud(contactService);        
-            AccountCrudDemo.AccountCrud(accountService);
-            CaseCrudDemo.CaseCrud(caseService, contactService);
-
-            
+            ContactCrudDemo.ContactCrud(contactService);
+            AccountCrudDemo.AccountCrud(accountService, contactService);
+            CaseCrudDemo.CaseCrud(caseService, contactService);            
         }
         
 
