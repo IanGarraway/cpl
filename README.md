@@ -14,7 +14,7 @@ Applying Microsoft.Xrm.Sdk.IOrganizationService to manipulate data on the Datave
 
 application requires a json file called appsettings.json in the Config folder.
 
-The files format:
+The file's format:
 {
   "Resource": "", connection uri
   "Secret": "", the secret
