@@ -1,7 +1,7 @@
 {
   "Resource": "fakeResource",
-  "SecretID": "fakeSecretID",
-  "AppID": "fakeAppID",
+  "Secret": "fakeSecretID",
+  "ClientID": "fakeAppID",
   "RedirectURI": "http://localhost"
 }
 

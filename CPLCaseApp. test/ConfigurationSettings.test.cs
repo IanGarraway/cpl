@@ -20,8 +20,8 @@ namespace CPLCaseApp._test
             Assert.IsNotNull(settings);
             Assert.IsTrue(settings.LoadSuccessful);
             Assert.AreEqual("fakeResource", settings.Resource);
-            Assert.AreEqual("fakeSecretID", settings.SecretID);
-            Assert.AreEqual("fakeAppID", settings.AppID);
+            Assert.AreEqual("fakeSecretID", settings.Secret);
+            Assert.AreEqual("fakeAppID", settings.ClientID);
         }
 
         [TestMethod]
@@ -32,14 +32,19 @@ namespace CPLCaseApp._test
 
             using (var consoleOutput = new StringWriter())
             {
+                var originalOut = Console.Out;
                 Console.SetOut(consoleOutput);
-                //Act
-                Configuration settings = new Configuration("noFile");
 
-                //Assert
-                Assert.IsNotNull(settings);
-                Assert.IsFalse(settings.LoadSuccessful);
-                Assert.AreEqual(expectedMessage, consoleOutput.ToString().Trim());
+                try
+                {
+                    //Act
+                    Configuration settings = new Configuration("noFile");
+
+                    //Assert
+                    Assert.IsNotNull(settings);
+                    Assert.IsFalse(settings.LoadSuccessful);
+                    Assert.AreEqual(expectedMessage, consoleOutput.ToString().Trim());
+                }finally { Console.SetOut(originalOut); }
             }
         }
 
@@ -47,18 +52,28 @@ namespace CPLCaseApp._test
         public void TestConfigurationFailureOnNoResource()
         {
             //Arrange
+            
             string expectedMessage = "Error:Value cannot be null. (Parameter 'Resource') is null.";
 
             using (var consoleOutput = new StringWriter())
             {
+                var originalOut = Console.Out;
                 Console.SetOut(consoleOutput);
-                //Act
-                Configuration settings = new Configuration("mockappsettingsnoresource.json");
 
-                //Assert
-                Assert.IsNotNull(settings);
-                Assert.IsFalse(settings.LoadSuccessful);
-                Assert.AreEqual(expectedMessage, consoleOutput.ToString().Trim());
+                try
+                {
+                    //Act
+                    Configuration settings = new Configuration("mockappsettingsnoresource.json");
+
+                    //Assert
+                    Assert.IsNotNull(settings);
+                    Assert.IsFalse(settings.LoadSuccessful);
+                    Assert.AreEqual(expectedMessage, consoleOutput.ToString().Trim());
+                }
+                finally
+                {
+                    Console.SetOut(originalOut);
+                }
             }
         }
 
@@ -66,18 +81,25 @@ namespace CPLCaseApp._test
         public void TestConfigurationFailureOnNoSecretId()
         {
             //Arrange
-            string expectedMessage = "Error:Value cannot be null. (Parameter 'SecretID') is null.";
+            string expectedMessage = "Error:Value cannot be null. (Parameter 'Secret') is null.";
 
             using (var consoleOutput = new StringWriter())
             {
-                Console.SetOut(consoleOutput);
-                //Act
-                Configuration settings = new Configuration("mockappsettingsnosecretid.json");
 
-                //Assert
-                Assert.IsNotNull(settings);                
-                Assert.AreEqual(expectedMessage, consoleOutput.ToString().Trim());
-                Assert.IsFalse(settings.LoadSuccessful);
+                var originalOut = Console.Out;
+                Console.SetOut(consoleOutput);
+
+                try
+                {
+                    //Act
+                    Configuration settings = new Configuration("mockappsettingsnosecretid.json");
+
+                    //Assert
+                    Assert.IsNotNull(settings);
+                    Assert.AreEqual(expectedMessage, consoleOutput.ToString().Trim());
+                    Assert.IsFalse(settings.LoadSuccessful);
+                }
+                finally { Console.SetOut(originalOut); }
             }
         }
     }
